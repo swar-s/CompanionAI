@@ -13,6 +13,8 @@ const ChatPage = (gender) => {
   },[])
   const messagesEndRef = useRef(null);
 
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+  
   const addMessage = (text, role) => {
     setMessages((prev) => [...prev, { text, role }]);
   };
@@ -25,7 +27,7 @@ const ChatPage = (gender) => {
     setInput("");
 
     try {
-      const response = await fetch("http://localhost:3000/generate", {
+      const response = await fetch(`${API_BASE_URL}/generate`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userInput: message }),
@@ -42,7 +44,7 @@ const ChatPage = (gender) => {
 
   const playTextToSpeech = async (message) => {
     try {
-      const response = await fetch("http://localhost:3000/synthesize", {
+      const response = await fetch(`${API_BASE_URL}/synthesize`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ text: message, gender }), // Pass gender if required by TTS
@@ -60,7 +62,7 @@ const ChatPage = (gender) => {
   // Handle voice input
   const handleVoiceInput = async (audioBase64) => {
     try {
-      const response = await fetch("http://localhost:3000/transcribe", {
+      const response = await fetch(`${API_BASE_URL}/transcribe`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ audio: audioBase64 }),

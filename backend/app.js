@@ -139,10 +139,11 @@ app.post('/transcribe', async (req, res) => {
 
     res.json({ transcription });
   } catch (error) {
-    console.error("Error transcribing audio:", error);
-    res.status(500).json({ error: "Error transcribing audio" });
+    console.error("Error in /transcribe:", error);
+    res.status(500).json({ error: error.message || "Error transcribing audio" });
   }
 });
+
 
 // Endpoint to handle text-to-speech synthesis
 app.post('/synthesize', async (req, res) => {

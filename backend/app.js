@@ -17,6 +17,7 @@ const textToSpeechClient = new TextToSpeechClient();
 app.use(cors());
 app.use(express.json({ limit: '50mb' }));
 
+// Mock user database (for demonstration purposes)
 const users = [
   {
     email: "user@example.com",
@@ -24,6 +25,7 @@ const users = [
   },
 ];
 
+// Endpoint for user login
 app.post('/login', async (req, res) => {
   const { email, password } = req.body;
   const user = users.find((user) => user.email === email);
@@ -35,11 +37,17 @@ app.post('/login', async (req, res) => {
   }
 });
 
+// Endpoint to handle gender selection
 app.post('/gender', async (req, res) => {
   const { gender } = req.body;
-  res.json({ message: "Gender selection successful", selectedGender: gender });
+  if (gender) {
+    res.json({ message: "Gender selection successful", selectedGender: gender });
+  } else {
+    res.status(400).json({ error: "Gender not provided" });
+  }
 });
 
+// Initialize the generative model
 const model = genAI.getGenerativeModel({
   model: process.env.MODEL_LANGCHAIN,
   systemInstruction: process.env.PROMPT,
@@ -53,8 +61,10 @@ const generationConfig = {
   responseMimeType: "text/plain",
 };
 
+// In-memory conversation history
 let conversationHistory = [];
 
+// Retry logic for overloaded API
 async function sendMessageWithRetry(chatSession, message, maxRetries = 5) {
   let retries = 0;
   const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -66,7 +76,7 @@ async function sendMessageWithRetry(chatSession, message, maxRetries = 5) {
     } catch (error) {
       if (error.status === 503) {
         retries++;
-        const waitTime = Math.pow(2, retries) * 1000;
+        const waitTime = Math.pow(2, retries) * 1000; // Exponential backoff
         console.log(`Model is overloaded. Retrying in ${waitTime / 1000} seconds...`);
         await delay(waitTime);
       } else {
@@ -77,9 +87,14 @@ async function sendMessageWithRetry(chatSession, message, maxRetries = 5) {
   throw new Error("Service is currently unavailable. Please try again later.");
 }
 
+// Endpoint to handle conversation with the AI model
 app.post('/generate', async (req, res) => {
   try {
     const { userInput } = req.body;
+
+    if (!userInput) {
+      return res.status(400).json({ error: "No user input provided" });
+    }
 
     conversationHistory.push({ role: "user", parts: [{ text: userInput }] });
 
@@ -95,13 +110,18 @@ app.post('/generate', async (req, res) => {
     res.json({ response: aiResponse });
   } catch (error) {
     console.error("Error:", error);
-    res.status(error.status || 500).json({ error: "Error generating response" });
+    res.status(500).json({ error: "Error generating response" });
   }
 });
 
+// Endpoint to handle audio transcription using Google Speech-to-Text
 app.post('/transcribe', async (req, res) => {
   try {
     const audioContent = req.body.audio;
+
+    if (!audioContent) {
+      return res.status(400).json({ error: "No audio content provided" });
+    }
 
     const request = {
       audio: { content: audioContent },
@@ -114,7 +134,7 @@ app.post('/transcribe', async (req, res) => {
 
     const [response] = await speechClient.recognize(request);
     const transcription = response.results
-      .map(result => result.alternatives[0].transcript)
+      .map((result) => result.alternatives[0].transcript)
       .join('\n');
 
     res.json({ transcription });
@@ -124,18 +144,24 @@ app.post('/transcribe', async (req, res) => {
   }
 });
 
+// Endpoint to handle text-to-speech synthesis
 app.post('/synthesize', async (req, res) => {
   try {
     const { text, gender } = req.body;
-    function getVoiceConfig({gender}) {
-      console.log(gender);
-      if(gender=="female" || gender=="Female"){
+
+    if (!text) {
+      return res.status(400).json({ error: "No text provided" });
+    }
+
+    // Gender-based voice selection logic
+    const getVoiceConfig = (gender) => {
+      if (gender?.toLowerCase() === "female") {
         return { languageCode: 'en-US', name: 'en-US-Studio-O', ssmlGender: 'FEMALE' };
       }
       return { languageCode: 'en-US', name: 'en-US-Studio-Q', ssmlGender: 'MALE' };
-    }
-    const voiceConfig = getVoiceConfig(gender)
-      
+    };
+
+    const voiceConfig = getVoiceConfig(gender);
 
     const request = {
       input: { text },
@@ -155,6 +181,12 @@ app.post('/synthesize', async (req, res) => {
   }
 });
 
+// Root route for health check
+app.get('/', (req, res) => {
+  res.send("Backend is running!");
+});
+
+// Start the server
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });

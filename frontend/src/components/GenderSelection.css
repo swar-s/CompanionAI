@@ -1,0 +1,75 @@
+.gender-selection {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    width:250vh;
+    background-image: url('https://wellsaidlabs.com/wp-content/uploads/2024/01/blog_header_Female-AI-Voice.jpg'); /* Use your uploaded image URL if required */
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    position: relative;
+    color: white;
+    font-family: 'Poppins', sans-serif;
+    text-align: center;
+    overflow: hidden;
+}
+
+.gender-selection h1 {
+    font-size: 4rem;
+    margin-bottom: 40px;
+    font-weight: 900;
+    text-transform: uppercase;
+    text-shadow: 4px 4px 10px rgba(0, 0, 0, 0.8);
+}
+
+.gender-selection button {
+    background: linear-gradient(135deg, rgba(0, 123, 255, 0.9), rgba(85, 85, 255, 0.9));
+    color: white;
+    border: none;
+    border-radius: 50px;
+    padding: 20px 50px;
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin: 15px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
+}
+
+.gender-selection button:hover {
+    background: linear-gradient(135deg, rgba(85, 85, 255, 0.9), rgba(0, 123, 255, 0.9));
+    transform: translateY(-5px) scale(1.05);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.7);
+}
+
+.gender-selection button:active {
+    transform: translateY(0) scale(1);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+}
+
+.gender-selection::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5); /* Overlay for text contrast */
+    z-index: -1;
+}
+
+/* Add a glowing animation */
+.gender-selection button:hover {
+    animation: glow 1s infinite alternate;
+}
+
+@keyframes glow {
+    0% {
+        box-shadow: 0 0 10px rgba(255, 210, 85, 0.9), 0 0 20px rgba(85, 85, 255, 0.7);
+    }
+    100% {
+        box-shadow: 0 0 20px rgba(255, 210, 85, 0.9), 0 0 40px rgba(85, 85, 255, 0.8);
+    }
+}
